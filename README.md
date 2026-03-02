@@ -2,6 +2,18 @@
 
 VST3 MIDI sequencer with 64-step engine, MPC-style swing, and hardware-inspired UI.
 
+## Download
+
+**Pre-built VST3 binaries:**
+- [macOS (Universal)](../../releases/latest/download/BombSeq-macOS.zip)
+- [Windows (x64)](../../releases/latest/download/BombSeq-Windows.zip)
+- [Linux (x64)](../../releases/latest/download/BombSeq-Linux.zip)
+
+### Installation
+- **macOS:** Extract and copy `BombSeq.vst3` to `~/Library/Audio/Plug-Ins/VST3/`
+- **Windows:** Extract and copy `BombSeq.vst3` to `C:\Program Files\Common Files\VST3\`
+- **Linux:** Extract and copy `BombSeq.vst3` to `~/.vst3/`
+
 ## Features
 - 64-step sequencer with per-step parameters (note, velocity, gate, probability)
 - **Step selection system:** Left-click to select steps, right-click/shift-click to toggle active

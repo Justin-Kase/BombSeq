@@ -1,0 +1,87 @@
+name: Build VST3
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-latest
+            artifact: BombSeq.vst3
+            path: build/BombSeq_artefacts/VST3/BombSeq.vst3
+            
+          - name: Windows
+            os: windows-latest
+            artifact: BombSeq.vst3
+            path: build/BombSeq_artefacts/VST3/BombSeq.vst3
+            
+          - name: Linux
+            os: ubuntu-latest
+            artifact: BombSeq.vst3
+            path: build/BombSeq_artefacts/VST3/BombSeq.vst3
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev libjack-jackd2-dev \
+          ladspa-sdk libcurl4-openssl-dev libfreetype6-dev \
+          libx11-dev libxcomposite-dev libxcursor-dev libxcursor-dev \
+          libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \
+          libwebkit2gtk-4.0-dev libglu1-mesa-dev mesa-common-dev
+    
+    - name: Configure
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build
+      run: cmake --build build --config Release
+    
+    - name: Package (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        cd build/BombSeq_artefacts/VST3
+        zip -r BombSeq-macOS.zip BombSeq.vst3
+        mv BombSeq-macOS.zip ../../../
+    
+    - name: Package (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd build/BombSeq_artefacts/VST3
+        7z a BombSeq-Windows.zip BombSeq.vst3
+        move BombSeq-Windows.zip ../../../
+    
+    - name: Package (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd build/BombSeq_artefacts/VST3
+        zip -r BombSeq-Linux.zip BombSeq.vst3
+        mv BombSeq-Linux.zip ../../../
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: BombSeq-${{ matrix.name }}
+        path: BombSeq-*.zip
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: BombSeq-*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
