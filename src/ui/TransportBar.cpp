@@ -1,62 +1,56 @@
 #include "TransportBar.h"
+#include "../PluginProcessor.h"
 
-TransportBar::TransportBar(juce::AudioProcessorValueTreeState& vts) : apvts(vts) {
-    // BPM label above slider
+TransportBar::TransportBar(BombSeqAudioProcessor& proc) 
+    : processor(proc), apvts(proc.getAPVTS()) {
+    
+    // BPM header label
     bpmHeaderLabel.setText("BPM", juce::dontSendNotification);
-    bpmHeaderLabel.setJustificationType(juce::Justification::centred);
-    bpmHeaderLabel.setFont(juce::Font(10.0f));
     bpmHeaderLabel.setColour(juce::Label::textColourId, juce::Colour(0xFF888888));
+    bpmHeaderLabel.setFont(juce::Font(10.0f, juce::Font::plain));
+    bpmHeaderLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(bpmHeaderLabel);
     
-    bpmSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    bpmSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    addAndMakeVisible(bpmSlider);
-    
-    bpmLabel.setText("120.0", juce::dontSendNotification);
-    bpmLabel.setJustificationType(juce::Justification::centred);
-    bpmLabel.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 24.0f, juce::Font::bold));
-    bpmLabel.setColour(juce::Label::textColourId, juce::Colour(0xFFFFAA00)); // Amber LCD
-    bpmLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
-    addAndMakeVisible(bpmLabel);
+    // BPM display (read-only, shows host tempo)
+    bpmDisplay.setColour(juce::Label::textColourId, juce::Colour(0xFFFFAA00)); // Amber
+    bpmDisplay.setColour(juce::Label::backgroundColourId, juce::Colour(0xFF2A3525)); // LCD background
+    bpmDisplay.setFont(juce::Font(18.0f, juce::Font::bold));
+    bpmDisplay.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(bpmDisplay);
     
     playButton.setClickingTogglesState(true);
     addAndMakeVisible(playButton);
     
-    bpmAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, "bpm", bpmSlider);
-    playAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, "playing", playButton);
+    playAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+        apvts, "playing", playButton);
     
-    bpmSlider.onValueChange = [this] {
-        bpmLabel.setText(juce::String(bpmSlider.getValue(), 1) + " BPM", juce::dontSendNotification);
-    };
-    bpmSlider.onValueChange(); // Initialize label
+    startTimerHz(10); // Update BPM display frequently
 }
 
 void TransportBar::paint(juce::Graphics& g) {
-    // Dark bottom panel
+    // Dark panel background
     g.setColour(juce::Colour(0xFF3A3838));
     g.fillRoundedRectangle(getLocalBounds().toFloat(), 4.0f);
-    
-    // LCD display bezel for BPM
-    auto lcdBounds = bpmLabel.getBounds().expanded(5, 3);
-    g.setColour(juce::Colour(0xFF404040)); // Bezel grey
-    g.fillRoundedRectangle(lcdBounds.toFloat(), 2.0f);
-    
-    // LCD background
-    g.setColour(juce::Colour(0xFF2A3525)); // LCD dark background
-    g.fillRoundedRectangle(lcdBounds.toFloat().reduced(2), 1.0f);
 }
 
 void TransportBar::resized() {
     auto area = getLocalBounds().reduced(10);
     
-    auto bpmArea = area.removeFromLeft(120);
+    // BPM section on left
+    auto bpmArea = area.removeFromLeft(200);
     bpmHeaderLabel.setBounds(bpmArea.removeFromTop(15));
-    bpmLabel.setBounds(bpmArea);
     
+    // LCD bezel around BPM display
+    auto lcdBezel = bpmArea.reduced(2);
+    bpmDisplay.setBounds(lcdBezel);
+    
+    // Play button on right
     area.removeFromLeft(10);
-    
-    bpmSlider.setBounds(area.removeFromLeft(300).withSizeKeepingCentre(300, 30));
-    area.removeFromLeft(10);
-    
-    playButton.setBounds(area.removeFromLeft(80).withSizeKeepingCentre(80, 40));
+    playButton.setBounds(area.removeFromLeft(100).reduced(0, 5));
+}
+
+void TransportBar::timerCallback() {
+    double bpm = processor.getCurrentBPM();
+    bpmDisplay.setText(juce::String(static_cast<int>(bpm + 0.5)) + " BPM", 
+                      juce::dontSendNotification);
 }

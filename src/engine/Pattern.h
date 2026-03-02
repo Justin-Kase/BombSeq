@@ -20,6 +20,7 @@ public:
     // Length
     int  getNumSteps ()    const { return numSteps; }
     void setNumSteps (int n);
+    void setLength   (int n)     { setNumSteps(n); } // Alias for clarity
 
     // Swing
     float     getSwingAmount () const          { return swingAmount; }

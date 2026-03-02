@@ -3,21 +3,23 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 
-class TransportBar : public juce::Component {
+class BombSeqAudioProcessor; // Forward declaration
+
+class TransportBar : public juce::Component, private juce::Timer {
 public:
-    explicit TransportBar(juce::AudioProcessorValueTreeState& apvts);
+    explicit TransportBar(BombSeqAudioProcessor& proc);
     
     void paint(juce::Graphics&) override;
     void resized() override;
+    void timerCallback() override;
 
 private:
+    BombSeqAudioProcessor& processor;
     juce::AudioProcessorValueTreeState& apvts;
     
-    juce::Slider bpmSlider;
-    juce::Label bpmLabel;
-    juce::Label bpmHeaderLabel;  // "BPM" label
+    juce::Label bpmDisplay;
+    juce::Label bpmHeaderLabel;
     juce::TextButton playButton{"Play"};
     
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bpmAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> playAttachment;
 };

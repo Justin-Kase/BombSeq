@@ -44,7 +44,6 @@ void SequencerEngine::advanceSequencer(juce::MidiBuffer& midiOut, int numSamples
     const double bpm = posInfo.getBpm().orFallback(currentBPM);
     const double ppqPos = posInfo.getPpqPosition().orFallback(0.0);
     const double ppqPerQN = 1.0;
-    const double ppqPerBar = ppqPerQN * 4.0;
     
     // Determine grid division
     double ppqPerStep;
@@ -55,74 +54,74 @@ void SequencerEngine::advanceSequencer(juce::MidiBuffer& midiOut, int numSamples
     }
     
     const double patternLengthPPQ = numSteps * ppqPerStep;
-    const double samplesPerQN = sampleRate * 60.0 / bpm;
+    const double samplesPerPPQ = sampleRate / (bpm / 60.0);
     
     const double bufferStartPPQ = ppqPos;
-    const double bufferEndPPQ = ppqPos + (numSamples / samplesPerQN);
+    const double bufferEndPPQ = ppqPos + (numSamples / samplesPerPPQ);
     
-    // Find pattern-relative position
-    const double ppqInPattern = std::fmod(ppqPos, patternLengthPPQ);
-    if (ppqInPattern < 0.0) return;
-    
-    const int baseStep = static_cast<int>(ppqInPattern / ppqPerStep);
-    
-    // Check if we cross into next step(s) during this buffer
-    for (int step = baseStep; step < numSteps; ++step) {
-        double stepPPQ = step * ppqPerStep;
-        
-        // Apply swing
-        const float swingOffset = calculateSwingOffset(pattern, step);
-        stepPPQ += swingOffset * ppqPerStep;
-        
-        // Wrap to pattern start
-        const double absoluteStepPPQ = std::floor(ppqPos / patternLengthPPQ) * patternLengthPPQ + stepPPQ;
-        
-        if (absoluteStepPPQ < bufferStartPPQ || absoluteStepPPQ >= bufferEndPPQ) {
-            continue;
-        }
-        
+    // Check each step to see if it triggers within this buffer
+    for (int step = 0; step < numSteps; ++step) {
         const auto& stepData = pattern.stepAt(step);
         if (!stepData.active) continue;
         
-        // Probability check
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        if (dist(gen) > stepData.probability) continue;
+        // Calculate step timing with swing
+        double stepPPQ = step * ppqPerStep;
+        const float swingOffset = calculateSwingOffset(pattern, step);
+        stepPPQ += swingOffset * ppqPerStep;
         
-        // Calculate sample offset
-        const double offsetPPQ = absoluteStepPPQ - bufferStartPPQ + stepData.microTiming * ppqPerStep;
-        int sampleOffset = static_cast<int>(offsetPPQ * samplesPerQN);
-        sampleOffset = juce::jlimit(0, numSamples - 1, sampleOffset);
+        // Find all instances of this step in the buffer (handles pattern looping)
+        double patternStartPPQ = std::floor(bufferStartPPQ / patternLengthPPQ) * patternLengthPPQ;
         
-        // Ratchet (retriggering)
-        const int ratchets = juce::jlimit(1, 8, stepData.ratchet);
-        const double ratchetInterval = ppqPerStep / ratchets;
-        
-        for (int r = 0; r < ratchets; ++r) {
-            const double ratchetPPQ = offsetPPQ + r * ratchetInterval;
-            const int ratchetSample = static_cast<int>(ratchetPPQ * samplesPerQN);
+        // Check this loop and next loop (in case we wrap)
+        for (int loop = 0; loop < 2; ++loop) {
+            const double absoluteStepPPQ = patternStartPPQ + stepPPQ;
             
-            if (ratchetSample >= numSamples) break;
-            
-            const int finalSample = juce::jlimit(0, numSamples - 1, ratchetSample);
-            const int noteNum = juce::jlimit(0, 127, static_cast<int>(stepData.note));
-            const int vel = juce::jlimit(1, 127, static_cast<int>(stepData.velocity));
-            
-            midiOut.addEvent(juce::MidiMessage::noteOn(1, noteNum, (juce::uint8)vel), finalSample);
-            
-            // Schedule note-off
-            const int gateSamples = static_cast<int>(stepData.gate * ppqPerStep * samplesPerQN);
-            const int noteOffSample = finalSample + gateSamples;
-            
-            if (noteOffSample < numSamples) {
-                midiOut.addEvent(juce::MidiMessage::noteOff(1, noteNum), noteOffSample);
-            } else {
-                noteOffQueue.push_back({noteOffSample - numSamples, noteNum, 1});
+            // Check if this step trigger falls within the buffer
+            if (absoluteStepPPQ >= bufferStartPPQ && absoluteStepPPQ < bufferEndPPQ) {
+                // Probability check
+                static std::random_device rd;
+                static std::mt19937 gen(rd());
+                std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+                if (dist(gen) > stepData.probability) continue;
+                
+                // Calculate sample offset with micro-timing
+                const double offsetPPQ = absoluteStepPPQ - bufferStartPPQ + stepData.microTiming * ppqPerStep;
+                int sampleOffset = static_cast<int>(offsetPPQ * samplesPerPPQ);
+                sampleOffset = juce::jlimit(0, numSamples - 1, sampleOffset);
+                
+                // Ratchet (retriggering)
+                const int ratchets = juce::jlimit(1, 8, stepData.ratchet);
+                const double ratchetInterval = ppqPerStep / ratchets;
+                
+                for (int r = 0; r < ratchets; ++r) {
+                    const double ratchetPPQ = offsetPPQ + r * ratchetInterval;
+                    const int ratchetSample = static_cast<int>(ratchetPPQ * samplesPerPPQ);
+                    
+                    if (ratchetSample >= numSamples) break;
+                    
+                    const int finalSample = juce::jlimit(0, numSamples - 1, ratchetSample);
+                    const int noteNum = juce::jlimit(0, 127, static_cast<int>(stepData.note));
+                    const int vel = juce::jlimit(1, 127, static_cast<int>(stepData.velocity));
+                    
+                    midiOut.addEvent(juce::MidiMessage::noteOn(1, noteNum, (juce::uint8)vel), finalSample);
+                    
+                    // Schedule note-off
+                    const int gateSamples = static_cast<int>(stepData.gate * ppqPerStep * samplesPerPPQ);
+                    const int noteOffSample = finalSample + gateSamples;
+                    
+                    if (noteOffSample < numSamples) {
+                        midiOut.addEvent(juce::MidiMessage::noteOff(1, noteNum), noteOffSample);
+                    } else {
+                        noteOffQueue.push_back({noteOffSample - numSamples, noteNum, 1});
+                    }
+                }
+                
+                currentStep = step;
             }
+            
+            // Check next pattern loop
+            patternStartPPQ += patternLengthPPQ;
         }
-        
-        currentStep = step;
     }
 }
 

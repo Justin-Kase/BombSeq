@@ -34,6 +34,14 @@ public:
     juce::AudioProcessorValueTreeState& getAPVTS() { return apvts; }
     PatternBank& getPatternBank() { return patternBank; }
     SequencerEngine& getEngine() { return engine; }
+    
+    double getCurrentBPM() const {
+        auto posInfo = getPlayHead()->getPosition();
+        if (posInfo.hasValue() && posInfo->getBpm().hasValue()) {
+            return *posInfo->getBpm();
+        }
+        return *apvts.getRawParameterValue("bpm");
+    }
 
 private:
     juce::AudioProcessorValueTreeState apvts;

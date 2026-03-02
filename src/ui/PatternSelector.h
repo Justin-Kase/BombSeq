@@ -14,4 +14,7 @@ public:
 private:
     PatternBank& patternBank;
     std::array<juce::Rectangle<int>, 16> buttonBounds;
+    
+    juce::Slider lengthSlider;
+    juce::Label lengthLabel;
 };

@@ -5,7 +5,7 @@ BombSeqAudioProcessorEditor::BombSeqAudioProcessorEditor(BombSeqAudioProcessor& 
     : AudioProcessorEditor(&p), processor(p),
       stepGrid(p.getPatternBank()),
       patternSelector(p.getPatternBank()),
-      transportBar(p.getAPVTS()),
+      transportBar(p),
       stepEditor(p.getPatternBank()),
       saveLoadPanel(p.getPatternBank()) {
     
@@ -32,7 +32,7 @@ BombSeqAudioProcessorEditor::BombSeqAudioProcessorEditor(BombSeqAudioProcessor& 
     // Initialize StepEditor to step 0
     stepEditor.setSelectedStep(0);
     
-    setSize(840, 580);
+    setSize(840, 620);
     setResizable(false, false);
     
     startTimerHz(30);

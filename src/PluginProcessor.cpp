@@ -36,7 +36,12 @@ void BombSeqAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce:
     if (!posInfo.hasValue()) return;
     
     const bool shouldPlay = *apvts.getRawParameterValue("playing") > 0.5f;
-    const double bpm = *apvts.getRawParameterValue("bpm");
+    
+    // Use host BPM if available, otherwise fall back to plugin parameter
+    double bpm = *apvts.getRawParameterValue("bpm");
+    if (posInfo->getBpm().hasValue()) {
+        bpm = *posInfo->getBpm();
+    }
     
     engine.setBPM(bpm);
     engine.setPlaying(shouldPlay && posInfo->getIsPlaying());

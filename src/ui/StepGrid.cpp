@@ -7,15 +7,21 @@ StepGrid::StepGrid(PatternBank& bank) : patternBank(bank) {
 void StepGrid::paint(juce::Graphics& g) {
     const auto& pattern = patternBank.currentPattern();
     
+    const int patternLength = pattern.getNumSteps();
+    
     for (int i = 0; i < 64; ++i) {
         const auto& bounds = stepBounds[i];
         const auto& step = pattern.stepAt(i);
         
+        bool isOutsidePattern = (i >= patternLength);
         bool isPlaying = (i == playingStep);
         bool isSelected = (i == selectedStep);
         juce::Colour padColour;
         
-        if (isPlaying) {
+        if (isOutsidePattern) {
+            // Grey out steps beyond pattern length
+            padColour = juce::Colour(0xFF4A4A4A).darker(0.3f); // Dark grey
+        } else if (isPlaying) {
             const float brightness = 0.7f + 0.3f * std::sin(pulsePhase);
             padColour = juce::Colour(0xFFFFAA00).withBrightness(brightness); // Amber pulse
         } else if (step.active) {
@@ -31,24 +37,26 @@ void StepGrid::paint(juce::Graphics& g) {
         g.setColour(padColour);
         g.fillRoundedRectangle(padBounds, 4.0f);
         
-        // Rubber texture (subtle gradient)
-        g.setGradientFill(juce::ColourGradient(
-            padColour.brighter(0.15f), padBounds.getX(), padBounds.getY(),
-            padColour.darker(0.15f), padBounds.getRight(), padBounds.getBottom(), false));
-        g.fillRoundedRectangle(padBounds, 4.0f);
-        
-        // Raised edge highlight (top-left)
-        g.setColour(padColour.brighter(0.3f));
-        juce::Path topLeft;
-        topLeft.addRoundedRectangle(padBounds, 4.0f);
-        g.strokePath(topLeft, juce::PathStrokeType(1.5f));
-        
-        // Shadow (bottom-right)
-        g.setColour(padColour.darker(0.4f));
-        g.drawRoundedRectangle(padBounds.translated(1, 1), 4.0f, 1.0f);
+        // Rubber texture (subtle gradient) - skip for outside-pattern steps
+        if (!isOutsidePattern) {
+            g.setGradientFill(juce::ColourGradient(
+                padColour.brighter(0.15f), padBounds.getX(), padBounds.getY(),
+                padColour.darker(0.15f), padBounds.getRight(), padBounds.getBottom(), false));
+            g.fillRoundedRectangle(padBounds, 4.0f);
+            
+            // Raised edge highlight (top-left)
+            g.setColour(padColour.brighter(0.3f));
+            juce::Path topLeft;
+            topLeft.addRoundedRectangle(padBounds, 4.0f);
+            g.strokePath(topLeft, juce::PathStrokeType(1.5f));
+            
+            // Shadow (bottom-right)
+            g.setColour(padColour.darker(0.4f));
+            g.drawRoundedRectangle(padBounds.translated(1, 1), 4.0f, 1.0f);
+        }
         
         // Selected step gets bright border
-        if (isSelected) {
+        if (isSelected && !isOutsidePattern) {
             g.setColour(juce::Colour(0xFFFFAA00)); // Amber selection
             g.drawRoundedRectangle(padBounds, 4.0f, 3.0f);
         }
