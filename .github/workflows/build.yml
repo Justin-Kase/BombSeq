@@ -9,6 +9,9 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: ${{ matrix.name }}
@@ -33,7 +36,7 @@ jobs:
             path: build/BombSeq_artefacts/VST3/BombSeq.vst3
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Install Linux dependencies
       if: runner.os == 'Linux'
@@ -73,7 +76,7 @@ jobs:
         mv BombSeq-Linux.zip ../../../
     
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: BombSeq-${{ matrix.name }}
         path: BombSeq-*.zip
