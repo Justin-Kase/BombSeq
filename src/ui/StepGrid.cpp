@@ -12,6 +12,7 @@ void StepGrid::paint(juce::Graphics& g) {
         const auto& step = pattern.stepAt(i);
         
         bool isPlaying = (i == playingStep);
+        bool isSelected = (i == selectedStep);
         juce::Colour fillColour;
         
         if (isPlaying) {
@@ -26,8 +27,14 @@ void StepGrid::paint(juce::Graphics& g) {
         g.setColour(fillColour);
         g.fillRoundedRectangle(bounds.toFloat().reduced(2.0f), 2.0f);
         
-        g.setColour(juce::Colour(0xFF2A2A2A));
-        g.drawRoundedRectangle(bounds.toFloat().reduced(2.0f), 2.0f, 1.0f);
+        // Selected step gets white border
+        if (isSelected) {
+            g.setColour(juce::Colours::white);
+            g.drawRoundedRectangle(bounds.toFloat().reduced(2.0f), 2.0f, 2.0f);
+        } else {
+            g.setColour(juce::Colour(0xFF2A2A2A));
+            g.drawRoundedRectangle(bounds.toFloat().reduced(2.0f), 2.0f, 1.0f);
+        }
     }
 }
 
@@ -48,8 +55,16 @@ void StepGrid::resized() {
 void StepGrid::mouseDown(const juce::MouseEvent& e) {
     for (int i = 0; i < 64; ++i) {
         if (stepBounds[i].contains(e.getPosition())) {
-            auto& step = patternBank.currentPattern().stepAt(i);
-            step.active = !step.active;
+            // Right-click or shift-click toggles active/inactive
+            if (e.mods.isRightButtonDown() || e.mods.isShiftDown()) {
+                auto& step = patternBank.currentPattern().stepAt(i);
+                step.active = !step.active;
+            } else {
+                // Left-click selects the step
+                selectedStep = i;
+                if (onStepSelected)
+                    onStepSelected(i);
+            }
             repaint();
             break;
         }

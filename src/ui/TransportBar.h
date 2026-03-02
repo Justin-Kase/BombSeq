@@ -15,6 +15,7 @@ private:
     
     juce::Slider bpmSlider;
     juce::Label bpmLabel;
+    juce::Label bpmHeaderLabel;  // "BPM" label
     juce::TextButton playButton{"Play"};
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> bpmAttachment;

@@ -1,4 +1,5 @@
 #include "StepEditor.h"
+#include <juce_audio_basics/juce_audio_basics.h>
 
 StepEditor::StepEditor(PatternBank& bank) : patternBank(bank) {
     auto setupSlider = [this](juce::Slider& slider, juce::Label& label, const juce::String& text) {
@@ -45,14 +46,30 @@ void StepEditor::paint(juce::Graphics& g) {
     g.setColour(juce::Colour(0xFF2A2A2A));
     g.fillRoundedRectangle(getLocalBounds().toFloat(), 4.0f);
     
-    g.setColour(juce::Colour(0xFFE0E0E0));
-    g.setFont(16.0f);
-    g.drawText("Step " + juce::String(selectedStep + 1), getLocalBounds().removeFromTop(30), juce::Justification::centred);
+    // Header with step number
+    auto headerArea = getLocalBounds().removeFromTop(30);
+    g.setColour(juce::Colour(0xFF1A1A1A));
+    g.fillRect(headerArea);
+    
+    g.setColour(juce::Colour(0xFF00FF00)); // Green LCD text
+    g.setFont(juce::Font("Courier New", 18.0f, juce::Font::bold));
+    g.drawText("STEP " + juce::String(selectedStep + 1).paddedLeft('0', 2), 
+               headerArea, juce::Justification::centred);
+    
+    // Note name display (C4, D#5, etc.)
+    const auto& s = patternBank.currentPattern().stepAt(selectedStep);
+    juce::String noteName = juce::MidiMessage::getMidiNoteName(s.note, true, true, 3);
+    
+    g.setColour(juce::Colour(0xFF00FF00));
+    g.setFont(14.0f);
+    auto noteArea = getLocalBounds().withY(35).withHeight(20);
+    g.drawText("NOTE: " + noteName, noteArea, juce::Justification::centred);
 }
 
 void StepEditor::resized() {
     auto area = getLocalBounds().reduced(10);
-    area.removeFromTop(30);
+    area.removeFromTop(30);  // Header
+    area.removeFromTop(25);  // Note name display
     
     const int sliderHeight = 40;
     const int padding = 10;

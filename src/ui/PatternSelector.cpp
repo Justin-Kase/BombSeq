@@ -3,6 +3,11 @@
 PatternSelector::PatternSelector(PatternBank& bank) : patternBank(bank) {}
 
 void PatternSelector::paint(juce::Graphics& g) {
+    // Header label
+    g.setColour(juce::Colour(0xFF888888));
+    g.setFont(10.0f);
+    g.drawText("PATTERN", getLocalBounds().removeFromTop(15), juce::Justification::centred);
+    
     const int current = patternBank.getCurrentIndex();
     
     for (int i = 0; i < 16; ++i) {
@@ -23,13 +28,16 @@ void PatternSelector::paint(juce::Graphics& g) {
 }
 
 void PatternSelector::resized() {
+    auto area = getLocalBounds();
+    area.removeFromTop(15); // Header space
+    
     const int padding = 4;
-    const int buttonWidth = (getWidth() - padding * 17) / 16;
-    const int buttonHeight = getHeight() - padding * 2;
+    const int buttonWidth = (area.getWidth() - padding * 17) / 16;
+    const int buttonHeight = area.getHeight() - padding * 2;
     
     for (int i = 0; i < 16; ++i) {
         const int x = padding + i * (buttonWidth + padding);
-        buttonBounds[i] = juce::Rectangle<int>(x, padding, buttonWidth, buttonHeight);
+        buttonBounds[i] = juce::Rectangle<int>(x, area.getY() + padding, buttonWidth, buttonHeight);
     }
 }
 

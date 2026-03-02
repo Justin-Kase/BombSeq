@@ -6,6 +6,7 @@
 #include "ui/PatternSelector.h"
 #include "ui/TransportBar.h"
 #include "ui/StepEditor.h"
+#include "ui/SaveLoadPanel.h"
 
 class BombSeqAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer {
 public:
@@ -24,6 +25,7 @@ private:
     PatternSelector patternSelector;
     TransportBar transportBar;
     StepEditor stepEditor;
+    SaveLoadPanel saveLoadPanel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BombSeqAudioProcessorEditor)
 };

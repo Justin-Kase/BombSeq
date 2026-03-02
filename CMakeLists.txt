@@ -42,6 +42,7 @@ target_sources(BombSeq
         src/ui/PatternSelector.cpp
         src/ui/TransportBar.cpp
         src/ui/StepEditor.cpp
+        src/ui/SaveLoadPanel.cpp
 )
 
 target_include_directories(BombSeq
