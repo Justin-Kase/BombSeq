@@ -13,27 +13,44 @@ void StepGrid::paint(juce::Graphics& g) {
         
         bool isPlaying = (i == playingStep);
         bool isSelected = (i == selectedStep);
-        juce::Colour fillColour;
+        juce::Colour padColour;
         
         if (isPlaying) {
             const float brightness = 0.7f + 0.3f * std::sin(pulsePhase);
-            fillColour = juce::Colour(0xFFFF8C00).withBrightness(brightness);
+            padColour = juce::Colour(0xFFFFAA00).withBrightness(brightness); // Amber pulse
         } else if (step.active) {
-            fillColour = juce::Colour(0xFFD63031);
+            padColour = juce::Colour(0xFFCC2020); // Red active
         } else {
-            fillColour = juce::Colour(0xFF3A3A3A);
+            padColour = juce::Colour(0xFF7A7672); // Grey rubber pad
         }
         
-        g.setColour(fillColour);
-        g.fillRoundedRectangle(bounds.toFloat().reduced(2.0f), 2.0f);
+        // MPC60-style rubber pad rendering
+        auto padBounds = bounds.toFloat().reduced(3.0f);
         
-        // Selected step gets white border
+        // Main pad fill
+        g.setColour(padColour);
+        g.fillRoundedRectangle(padBounds, 4.0f);
+        
+        // Rubber texture (subtle gradient)
+        g.setGradientFill(juce::ColourGradient(
+            padColour.brighter(0.15f), padBounds.getX(), padBounds.getY(),
+            padColour.darker(0.15f), padBounds.getRight(), padBounds.getBottom(), false));
+        g.fillRoundedRectangle(padBounds, 4.0f);
+        
+        // Raised edge highlight (top-left)
+        g.setColour(padColour.brighter(0.3f));
+        juce::Path topLeft;
+        topLeft.addRoundedRectangle(padBounds, 4.0f);
+        g.strokePath(topLeft, juce::PathStrokeType(1.5f));
+        
+        // Shadow (bottom-right)
+        g.setColour(padColour.darker(0.4f));
+        g.drawRoundedRectangle(padBounds.translated(1, 1), 4.0f, 1.0f);
+        
+        // Selected step gets bright border
         if (isSelected) {
-            g.setColour(juce::Colours::white);
-            g.drawRoundedRectangle(bounds.toFloat().reduced(2.0f), 2.0f, 2.0f);
-        } else {
-            g.setColour(juce::Colour(0xFF2A2A2A));
-            g.drawRoundedRectangle(bounds.toFloat().reduced(2.0f), 2.0f, 1.0f);
+            g.setColour(juce::Colour(0xFFFFAA00)); // Amber selection
+            g.drawRoundedRectangle(padBounds, 4.0f, 3.0f);
         }
     }
 }

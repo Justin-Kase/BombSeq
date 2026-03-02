@@ -44,12 +44,27 @@ BombSeqAudioProcessorEditor::~BombSeqAudioProcessorEditor() {
 }
 
 void BombSeqAudioProcessorEditor::paint(juce::Graphics& g) {
-    g.fillAll(mpcLookAndFeel.getBackgroundColour());
+    auto bounds = getLocalBounds();
     
-    // Draw logo in upper left corner (60x60px)
+    // Wood side panels (40px each side)
+    g.setColour(mpcLookAndFeel.getWoodPanel());
+    g.fillRect(bounds.removeFromLeft(40));
+    g.fillRect(bounds.removeFromRight(40));
+    
+    // Main chassis background
+    g.setColour(mpcLookAndFeel.getBackgroundColour());
+    g.fillAll();
+    
+    // BOMB branding (upper left)
+    g.setColour(mpcLookAndFeel.getBrandRed());
+    juce::Font bombFont(juce::FontOptions("Arial Black", 36.0f, juce::Font::bold));
+    g.setFont(bombFont);
+    g.drawText("BOMB", 50, 15, 150, 40, juce::Justification::centredLeft);
+    
+    // Logo in upper right corner (keep existing bomb emoji logo)
     if (logoImage.isValid()) {
-        const int logoSize = 60;
-        g.drawImage(logoImage, 10, 10, logoSize, logoSize,
+        const int logoSize = 50;
+        g.drawImage(logoImage, getWidth() - logoSize - 50, 15, logoSize, logoSize,
                    0, 0, logoImage.getWidth(), logoImage.getHeight());
     }
 }

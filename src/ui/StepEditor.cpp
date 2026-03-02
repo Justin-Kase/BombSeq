@@ -43,16 +43,22 @@ StepEditor::StepEditor(PatternBank& bank) : patternBank(bank) {
 }
 
 void StepEditor::paint(juce::Graphics& g) {
-    g.setColour(juce::Colour(0xFF2A2A2A));
+    // Dark panel background
+    g.setColour(juce::Colour(0xFF3A3838));
     g.fillRoundedRectangle(getLocalBounds().toFloat(), 4.0f);
     
-    // Header with step number
+    // LCD bezel for header
     auto headerArea = getLocalBounds().removeFromTop(30);
-    g.setColour(juce::Colour(0xFF1A1A1A));
-    g.fillRect(headerArea);
+    g.setColour(juce::Colour(0xFF404040)); // Bezel grey
+    g.fillRoundedRectangle(headerArea.toFloat().reduced(5, 2), 2.0f);
     
-    g.setColour(juce::Colour(0xFF00FF00)); // Green LCD text
-    g.setFont(juce::Font("Courier New", 18.0f, juce::Font::bold));
+    // LCD background
+    g.setColour(juce::Colour(0xFF2A3525));
+    g.fillRoundedRectangle(headerArea.toFloat().reduced(7, 4), 1.0f);
+    
+    // LCD text - Step number
+    g.setColour(juce::Colour(0xFFFFAA00)); // Amber LCD
+    g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 18.0f, juce::Font::bold));
     g.drawText("STEP " + juce::String(selectedStep + 1).paddedLeft('0', 2), 
                headerArea, juce::Justification::centred);
     
@@ -60,9 +66,9 @@ void StepEditor::paint(juce::Graphics& g) {
     const auto& s = patternBank.currentPattern().stepAt(selectedStep);
     juce::String noteName = juce::MidiMessage::getMidiNoteName(s.note, true, true, 3);
     
-    g.setColour(juce::Colour(0xFF00FF00));
+    g.setColour(juce::Colour(0xFFFFAA00));
     g.setFont(14.0f);
-    auto noteArea = getLocalBounds().withY(35).withHeight(20);
+    auto noteArea = getLocalBounds().withY(40).withHeight(20);
     g.drawText("NOTE: " + noteName, noteArea, juce::Justification::centred);
 }
 

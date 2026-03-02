@@ -15,7 +15,8 @@ TransportBar::TransportBar(juce::AudioProcessorValueTreeState& vts) : apvts(vts)
     bpmLabel.setText("120.0", juce::dontSendNotification);
     bpmLabel.setJustificationType(juce::Justification::centred);
     bpmLabel.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 24.0f, juce::Font::bold));
-    bpmLabel.setColour(juce::Label::textColourId, juce::Colour(0xFF00FF00)); // Green LCD
+    bpmLabel.setColour(juce::Label::textColourId, juce::Colour(0xFFFFAA00)); // Amber LCD
+    bpmLabel.setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
     addAndMakeVisible(bpmLabel);
     
     playButton.setClickingTogglesState(true);
@@ -31,8 +32,18 @@ TransportBar::TransportBar(juce::AudioProcessorValueTreeState& vts) : apvts(vts)
 }
 
 void TransportBar::paint(juce::Graphics& g) {
-    g.setColour(juce::Colour(0xFF2A2A2A));
+    // Dark bottom panel
+    g.setColour(juce::Colour(0xFF3A3838));
     g.fillRoundedRectangle(getLocalBounds().toFloat(), 4.0f);
+    
+    // LCD display bezel for BPM
+    auto lcdBounds = bpmLabel.getBounds().expanded(5, 3);
+    g.setColour(juce::Colour(0xFF404040)); // Bezel grey
+    g.fillRoundedRectangle(lcdBounds.toFloat(), 2.0f);
+    
+    // LCD background
+    g.setColour(juce::Colour(0xFF2A3525)); // LCD dark background
+    g.fillRoundedRectangle(lcdBounds.toFloat().reduced(2), 1.0f);
 }
 
 void TransportBar::resized() {

@@ -1,31 +1,47 @@
 #include "MpcLookAndFeel.h"
 
 MpcLookAndFeel::MpcLookAndFeel() {
-    setColour(juce::TextButton::buttonColourId, ledInactive);
-    setColour(juce::TextButton::buttonOnColourId, ledActive);
+    setColour(juce::TextButton::buttonColourId, creamButton);
+    setColour(juce::TextButton::buttonOnColourId, redButton);
     setColour(juce::TextButton::textColourOffId, text);
-    setColour(juce::TextButton::textColourOnId, text);
-    setColour(juce::Slider::thumbColourId, ledActive);
+    setColour(juce::TextButton::textColourOnId, juce::Colours::white);
+    setColour(juce::Slider::thumbColourId, redButton);
     setColour(juce::Slider::trackColourId, panelBorder);
     setColour(juce::Label::textColourId, lcdText);
+    setColour(juce::Label::backgroundColourId, lcdBackground);
 }
 
 void MpcLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button, 
                                           const juce::Colour& backgroundColour,
                                           bool isMouseOverButton, bool isButtonDown) {
-    auto bounds = button.getLocalBounds().toFloat().reduced(2.0f);
+    auto bounds = button.getLocalBounds().toFloat().reduced(1.5f);
     
-    juce::Colour fillColour = ledInactive;
+    juce::Colour fillColour = creamButton;
     if (button.getToggleState())
-        fillColour = ledActive;
+        fillColour = redButton;
     else if (isMouseOverButton)
-        fillColour = ledInactive.brighter(0.2f);
+        fillColour = creamButton.darker(0.1f);
     
+    if (isButtonDown)
+        fillColour = fillColour.darker(0.15f);
+    
+    // Vintage raised button look
     g.setColour(fillColour);
-    g.fillRoundedRectangle(bounds, 2.0f);
+    g.fillRoundedRectangle(bounds, 3.0f);
     
-    g.setColour(panelBorder);
-    g.drawRoundedRectangle(bounds, 2.0f, 1.0f);
+    // Highlight (top-left)
+    g.setColour(fillColour.brighter(0.3f));
+    g.drawLine(bounds.getX() + 3, bounds.getY() + 1, 
+               bounds.getRight() - 3, bounds.getY() + 1, 1.0f);
+    g.drawLine(bounds.getX() + 1, bounds.getY() + 3,
+               bounds.getX() + 1, bounds.getBottom() - 3, 1.0f);
+    
+    // Shadow (bottom-right)
+    g.setColour(fillColour.darker(0.4f));
+    g.drawLine(bounds.getX() + 3, bounds.getBottom() - 1,
+               bounds.getRight() - 3, bounds.getBottom() - 1, 1.0f);
+    g.drawLine(bounds.getRight() - 1, bounds.getY() + 3,
+               bounds.getRight() - 1, bounds.getBottom() - 3, 1.0f);
 }
 
 void MpcLookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int width, int height,
