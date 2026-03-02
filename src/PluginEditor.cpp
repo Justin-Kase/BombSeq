@@ -51,20 +51,33 @@ void BombSeqAudioProcessorEditor::paint(juce::Graphics& g) {
     g.fillRect(bounds.removeFromLeft(40));
     g.fillRect(bounds.removeFromRight(40));
     
-    // Main chassis background
-    g.setColour(mpcLookAndFeel.getBackgroundColour());
+    // Main chassis background with subtle gradient
+    auto bgBounds = getLocalBounds();
+    g.setGradientFill(juce::ColourGradient(
+        mpcLookAndFeel.getBackgroundColour().brighter(0.05f), 0, 0,
+        mpcLookAndFeel.getBackgroundColour().darker(0.05f), 0, getHeight(), false));
     g.fillAll();
     
-    // BOMB branding (upper left)
+    // BOMB branding (upper left) with subtle shadow
+    g.setColour(juce::Colours::black.withAlpha(0.3f));
+    g.setFont(juce::Font(juce::FontOptions("Arial Black", 36.0f, juce::Font::bold)));
+    g.drawText("BOMB", 52, 17, 150, 40, juce::Justification::centredLeft);
+    
     g.setColour(mpcLookAndFeel.getBrandRed());
-    juce::Font bombFont(juce::FontOptions("Arial Black", 36.0f, juce::Font::bold));
-    g.setFont(bombFont);
     g.drawText("BOMB", 50, 15, 150, 40, juce::Justification::centredLeft);
     
-    // Logo in upper right corner (keep existing bomb emoji logo)
+    // Logo in upper right corner with black circular background
     if (logoImage.isValid()) {
         const int logoSize = 50;
-        g.drawImage(logoImage, getWidth() - logoSize - 50, 15, logoSize, logoSize,
+        const int logoX = getWidth() - logoSize - 50;
+        const int logoY = 15;
+        
+        // Black circle background
+        g.setColour(juce::Colours::black);
+        g.fillEllipse(logoX - 3, logoY - 3, logoSize + 6, logoSize + 6);
+        
+        // Logo
+        g.drawImage(logoImage, logoX, logoY, logoSize, logoSize,
                    0, 0, logoImage.getWidth(), logoImage.getHeight());
     }
 }

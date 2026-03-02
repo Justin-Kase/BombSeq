@@ -25,6 +25,12 @@ void PatternBank::loadFromUserSlot(int slot) {
     currentPattern() = userPatterns[slot];
 }
 
+void PatternBank::clearUserSlot(int slot) {
+    if (slot < 0 || slot >= NUM_USER_SLOTS) return;
+    userSlotOccupied[slot] = false;
+    userPatterns[slot] = Pattern(); // Reset to default empty pattern
+}
+
 juce::ValueTree PatternBank::toValueTree() const {
     juce::ValueTree vt(VT_TYPE);
     vt.setProperty(VT_CURRENT, currentIndex, nullptr);

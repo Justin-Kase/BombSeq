@@ -20,6 +20,7 @@ private:
     juce::Label bpmDisplay;
     juce::Label bpmHeaderLabel;
     juce::TextButton playButton{"Play"};
+    juce::Image logoImage;
     
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> playAttachment;
 };

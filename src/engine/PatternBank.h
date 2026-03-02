@@ -24,6 +24,7 @@ public:
     // User bank slots
     void saveToUserSlot   (int slot);
     void loadFromUserSlot (int slot);
+    void clearUserSlot    (int slot);
     bool isUserSlotOccupied (int slot) const
     {
         return slot >= 0 && slot < NUM_USER_SLOTS && userSlotOccupied[slot];

@@ -79,7 +79,13 @@ void SaveLoadPanel::mouseDown(const juce::MouseEvent& e) {
     // Check save slots
     for (int i = 0; i < 8; ++i) {
         if (saveSlotBounds[i].contains(e.getPosition())) {
-            patternBank.saveToUserSlot(i);
+            if (patternBank.isUserSlotOccupied(i)) {
+                // Slot occupied: clear it
+                patternBank.clearUserSlot(i);
+            } else {
+                // Slot empty: save to it
+                patternBank.saveToUserSlot(i);
+            }
             repaint();
             return;
         }
