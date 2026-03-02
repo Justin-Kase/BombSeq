@@ -1,9 +1,5 @@
 # BombSeq 💣
 
-<p align="center">
-  <img src="logo.png" alt="BombSeq Logo" width="200"/>
-</p>
-
 VST3 MIDI sequencer with 64-step engine, MPC-style swing, and hardware-inspired UI.
 
 ## Download
