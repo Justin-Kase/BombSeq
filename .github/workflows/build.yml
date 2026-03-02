@@ -57,24 +57,24 @@ jobs:
     - name: Package (macOS)
       if: runner.os == 'macOS'
       run: |
-        cd build/BombSeq_artefacts/VST3
+        cd build/BombSeq_artefacts/Release/VST3
         zip -r BombSeq-macOS.zip BombSeq.vst3
-        mv BombSeq-macOS.zip ../../../
+        mv BombSeq-macOS.zip ../../../../
     
     - name: Package (Windows)
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        cd build\BombSeq_artefacts\VST3
+        cd build\BombSeq_artefacts\Release\VST3
         7z a BombSeq-Windows.zip BombSeq.vst3
-        move BombSeq-Windows.zip ..\..\..
+        move BombSeq-Windows.zip ..\..\..\..
     
     - name: Package (Linux)
       if: runner.os == 'Linux'
       run: |
-        cd build/BombSeq_artefacts/VST3
+        cd build/BombSeq_artefacts/Release/VST3
         zip -r BombSeq-Linux.zip BombSeq.vst3
-        mv BombSeq-Linux.zip ../../../
+        mv BombSeq-Linux.zip ../../../../
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
