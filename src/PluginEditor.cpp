@@ -1,4 +1,5 @@
 #include "PluginEditor.h"
+#include <BinaryData.h>
 
 BombSeqAudioProcessorEditor::BombSeqAudioProcessorEditor(BombSeqAudioProcessor& p)
     : AudioProcessorEditor(&p), processor(p),
@@ -9,6 +10,13 @@ BombSeqAudioProcessorEditor::BombSeqAudioProcessorEditor(BombSeqAudioProcessor& 
       saveLoadPanel(p.getPatternBank()) {
     
     setLookAndFeel(&mpcLookAndFeel);
+    
+    // Load logo from binary resources
+    int logoDataSize = 0;
+    auto logoData = BinaryData::getNamedResource("logo_png", logoDataSize);
+    if (logoData != nullptr && logoDataSize > 0) {
+        logoImage = juce::ImageFileFormat::loadFrom(logoData, logoDataSize);
+    }
     
     addAndMakeVisible(stepGrid);
     addAndMakeVisible(patternSelector);
@@ -37,6 +45,13 @@ BombSeqAudioProcessorEditor::~BombSeqAudioProcessorEditor() {
 
 void BombSeqAudioProcessorEditor::paint(juce::Graphics& g) {
     g.fillAll(mpcLookAndFeel.getBackgroundColour());
+    
+    // Draw logo in upper left corner (60x60px)
+    if (logoImage.isValid()) {
+        const int logoSize = 60;
+        g.drawImage(logoImage, 10, 10, logoSize, logoSize,
+                   0, 0, logoImage.getWidth(), logoImage.getHeight());
+    }
 }
 
 void BombSeqAudioProcessorEditor::resized() {

@@ -30,6 +30,11 @@ juce_add_plugin(BombSeq
     COPY_PLUGIN_AFTER_BUILD   FALSE
 )
 
+juce_add_binary_data(BombSeqBinaryData
+    SOURCES
+        Resources/logo.png
+)
+
 target_sources(BombSeq
     PRIVATE
         src/PluginProcessor.cpp
@@ -61,6 +66,7 @@ target_link_libraries(BombSeq
     PRIVATE
         juce::juce_audio_utils
         juce::juce_audio_plugin_client
+        BombSeqBinaryData
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

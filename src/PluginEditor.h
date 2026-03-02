@@ -26,6 +26,8 @@ private:
     TransportBar transportBar;
     StepEditor stepEditor;
     SaveLoadPanel saveLoadPanel;
+    
+    juce::Image logoImage;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BombSeqAudioProcessorEditor)
 };
